@@ -5,6 +5,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { pathToFileURL } from "url";
 
 const HOME = process.env.HOME || os.homedir();
 const AG = process.env.PI_HOME ? path.join(process.env.PI_HOME, "agent") : path.join(HOME, ".pi", "agent");
@@ -14,7 +15,7 @@ const ver = fs.readFileSync(path.join(ROOT, "current-version"), "utf8").trim();
 const NM = path.join(ROOT, "releases", ver, "node_modules");
 const PIROOT = path.join(NM, "@earendil-works", "pi-coding-agent");
 
-const { createJiti } = await import(path.join(NM, "jiti", "lib", "jiti-static.mjs"));
+const { createJiti } = await import(pathToFileURL(path.join(NM, "jiti", "lib", "jiti-static.mjs")).href);
 const jiti = createJiti(import.meta.url, {
   alias: {
     "typebox": path.join(NM, "typebox", "build", "index.mjs"),
