@@ -9,7 +9,7 @@ import { pathToFileURL } from "url";
 
 const HOME = process.env.HOME || os.homedir();
 const AG = process.env.PI_HOME ? path.join(process.env.PI_HOME, "agent") : path.join(HOME, ".pi", "agent");
-const EXT = process.argv[2] || path.join(AG, "extensions");
+const EXT = path.resolve(process.argv[2] || path.join(AG, "extensions"));
 const ROOT = process.env.PI_MANAGED_INSTALL_ROOT || path.join(AG, "install");
 const ver = fs.readFileSync(path.join(ROOT, "current-version"), "utf8").trim();
 const NM = path.join(ROOT, "releases", ver, "node_modules");
