@@ -2,7 +2,28 @@
 
 > **这是 pi 底座的外挂系统「钢铁意志」的完整框架文件备份。**
 > 一行命令即可外接到任何一台已装 pi 的机器上，让一个裸 pi 变强。
-  PI-AGENT 项目官网地址 PI.DEV 项目仓库地址官网底部有公布！
+
+---
+
+## ⚠️ 前置条件：必须先有 pi-Agent 底座
+
+**本仓库是「外挂层」，不含底座。** 没有 pi 底座，这里的扩展、技能、宪法、引擎一行都跑不起来。
+
+先把底座装上，再谈外挂：
+
+| 项目 | 地址 |
+|---|---|
+| **pi-Agent 官网**（安装脚本 / 文档） | **https://pi.dev** |
+| **pi-Agent 官方 GitHub 仓库** | **https://github.com/earendil-works/pi** |
+
+```bash
+curl -fsSL https://pi.dev/install.sh | sh    # 装 pi 底座，约 11 秒
+export PATH="$HOME/.pi/agent/bin:$PATH"      # 装完按提示执行这句
+pi --version                                 # 能打印版本 = 底座就位，可以接外挂了
+```
+
+> 顺序铁律：**先 pi 底座 → 再跑 attach.sh**。反过来一定会失败，且失败原因全是「找不到 pi」。
+
 ## 它是什么
 
 pi-Agent 是底座，本身**没有任何记忆能力** —— 每开一个新会话就是一张白纸。
@@ -10,14 +31,55 @@ pi-Agent 是底座，本身**没有任何记忆能力** —— 每开一个新�
 
 - **记忆三层**：L1 原始日志 → L2 精炼 → L3 wiki 合成 + 向量检索
 - **wiki 四类**：entities / concepts / sources / synthesis + playbooks 剧本库
-- **22 个自研扩展**（`steel-will-*`）：wiki 引擎、自动触发、lint、temporal、self-status、
-  成就动机、自主神经、auto-promoter、candidate-screener、clone-imprint、codegraph、
-  forge、hallucination-eliminator、heartbeat、l1-logger、long-term、recall-tool、
-  state-control、subconscious、transcendence、vector-radar
+- **37 个自研扩展**（`steel-will-*`，全量启用，接入即在跑）—— 完整清单见下方《37 个扩展 · 全景》
 - **行为宪法**：阶梯规则、铁律、静默令、抓取决策阶梯、编码阶梯
-- **技能库**：30+ 个 `steel-will-*` 技能 + browser-tools / edge-tts / github-get /
+- **技能库**：35 个技能（含 `steel-will-*` 自研技能与 browser-tools / edge-tts / github-get / pi-web-restart） + browser-tools / edge-tts / github-get /
   hyperframes / pi-web-restart
 - **自动运维**：L1 Watcher + 定时精炼 / 体检 / 备份
+
+## 37 个扩展 · 全景
+
+接入即全部加载（`attach.sh` 不再保留"停用"状态）。经沙盒回归测试：**37/37 可加载、113 条命令、零冲突**。
+
+| # | 扩展 | 作用 |
+|---|---|---|
+| 1 | `steel-will-recall-tool` | 核心检索工具 `recall_memory` + workspace 多工作区管理（全局/项目隔离） |
+| 2 | `steel-will-30-wiki-engine` | Wiki 引擎：entities/concepts/sources/synthesis 四类页面的读写、索引与日志 |
+| 3 | `steel-will-32-auto-trigger` | 自动触发器：扫描候选池 → 按规则自动晋升为 L2/L3 |
+| 4 | `steel-will-33-lint-system` | Wiki 体检：断链、孤儿页、结构问题诊断并出报告 |
+| 5 | `steel-will-34-temporal` | 时间索引：事实有效期窗口 + 取代链，过时记忆检索时自动降权 |
+| 6 | `steel-will-35-self-status` | 自知之明：一体式自述、记忆分布、沉睡条目盘点 |
+| 7 | `steel-will-achievement-motivator` | 成就激励与动机加成，附带 token ROI 账本 |
+| 8 | `steel-will-adjudicator` | 冲突裁决庭：冲突暴露、取代声明、过时判定、裁决台账 |
+| 9 | `steel-will-autonomic-nervous` | 自主神经系统：认知过载抑制 + 动态 token 压榨微调 |
+| 10 | `steel-will-auto-promoter` | 自动晋升管道 V2：L1 原始日志 → L2 精华提炼（定时增量） |
+| 11 | `steel-will-bootstrap` | 开机引导：初始化、状态自检、母目标注入 |
+| 12 | `steel-will-candidate-screener` | 候选筛选器：心跳扫描候选池、分级与筛选 |
+| 13 | `steel-will-clone-imprint` | 克隆印记：任务模式图灵闭环校验 |
+| 14 | `steel-will-codegraph` | 代码图谱引擎：符号搜索、依赖分析、调用链追踪 |
+| 15 | `steel-will-experience-injector` | 经验注入器：按场景把经验包注入上下文 |
+| 16 | `steel-will-failure-learner` | 失败学习器：失败案例、反模式、坑，回写成教训条目 |
+| 17 | `steel-will-forge` | 零号工厂：迭代车间与底层代码资产熔铸炉 |
+| 18 | `steel-will-gateway` | 登机口：新窗口入口指引、交接卡、导航图 |
+| 19 | `steel-will-governance` | 治理层：风险分级、行动预检、保护模式、审计账本 |
+| 20 | `steel-will-hallucination-eliminator` | 幻觉剔除手术 + 四重冗余逻辑校验，带可信元数据 |
+| 21 | `steel-will-heartbeat` | 心跳：续接快照、恢复卡、快速恢复上一段现场 |
+| 22 | `steel-will-l1-logger` | L1 原始日志采集：会话 → 日志，附语义检索钩子 |
+| 23 | `steel-will-long-term` | 长期记忆：L3 路由、向量化、长期规则 |
+| 24 | `steel-will-memory-skeleton` | 记忆骨架：域划分、目录地图、结构自检 |
+| 25 | `steel-will-migration` | 迁移与验收：引导部署、冒烟测试、样例数据 |
+| 26 | `steel-will-ontology` | 本体论：术语规范、schema、锚点、品牌与子系统地图 |
+| 27 | `steel-will-reflection` | 反思系统：精华提炼、闭环判定、可复用流程沉淀 |
+| 28 | `steel-will-retrieval` | 检索层：索引构建、词法回退、记忆索引维护 |
+| 29 | `steel-will-scheduler` | 操作控制台：节奏调度、行动卡、常驻巡航 |
+| 30 | `steel-will-scheduler-v2` | 调度 V2：任务分级、心跳/反思/任务节律编排 |
+| 31 | `steel-will-security` | 边界层：读取边界规则、审批流、偏好管理 |
+| 32 | `steel-will-sensory` | 感官层：宿主预检、宿主保护反应、感知采样 |
+| 33 | `steel-will-state-control` | 状态控制：阶段推进、措辞规范、会话结束回写提醒 |
+| 34 | `steel-will-subconscious` | 潜意识：自发式编排与动态重规划算力栈 |
+| 35 | `steel-will-swarm` | 蜂群：多智能体协作、任务派发、授权清单 |
+| 36 | `steel-will-transcendence` | 幽灵复刻协议：灵魂清单 + 跨域灾难重生序列 |
+| 37 | `steel-will-vector-radar` | 向量语义雷达：降维捕获网、读取预算控制 |
 
 ## 与另一个仓库的区别
 
@@ -40,7 +102,7 @@ export PATH="$HOME/.pi/agent/bin:$PATH"     # 装完按提示执行这句
 然后一行外接：
 
 ```bash
-git clone https://github.com/ip9988001/pi-gangtieyizhi.git ~/pi-gangtieyizhi && bash ~/pi-gangtieyizhi/attach.sh --yes
+git clone https://github.com/ip9988001/Pi-Iron_Will.git ~/Pi-Iron_Will && bash ~/Pi-Iron_Will/attach.sh --yes
 ```
 
 - `bash attach.sh` —— 交互式，会询问 key（**全部可以跳过**）
@@ -72,7 +134,7 @@ pi-gangtieyizhi/
 ├── attach.sh              # 一行外接脚本（9 步全自动）
 ├── deps.sh                # 依赖扫描 / 自动安装 / 镜像源探测
 ├── extensions/            # 37 个 steel-will-* 扩展（全量启用，接入即全部在跑）
-├── skills/                # PI-技能库（33 个技能）
+├── skills/                # PI-技能库（35 个技能）
 ├── constitution/          # AGENTS.md / SYSTEM.md / 0-AGENTS / protocols（108 份协议文档）/ goals-template
 ├── engine/                # bin/（l1_watcher.py 等）services/ scripts/ aux/ pi-extensions/
 ├── config/                # settings / l1_watcher.config.example / STEEL-WILL-KEYS.example / mcp-adapter / package.json
