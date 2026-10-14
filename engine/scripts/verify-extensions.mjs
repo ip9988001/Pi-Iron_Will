@@ -15,6 +15,16 @@ const ver = fs.readFileSync(path.join(ROOT, "current-version"), "utf8").trim();
 const NM = path.join(ROOT, "releases", ver, "node_modules");
 const PIROOT = path.join(NM, "@earendil-works", "pi-coding-agent");
 
+// 扩展可能 import "../services/xxx.ts"；部署布局下 $AG/services 存在，
+// 仓库布局下服务在 engine/services —— 自测时临时挂一个软链补齐。
+const base = path.dirname(EXT);
+const svcDir = path.join(base, "services");
+const altSvc = path.join(base, "engine", "services");
+let tmpLink = false;
+if (!fs.existsSync(svcDir) && fs.existsSync(altSvc)) {
+  try { fs.symlinkSync(altSvc, svcDir, "dir"); tmpLink = true; } catch {}
+}
+
 const { createJiti } = await import(pathToFileURL(path.join(NM, "jiti", "lib", "jiti-static.mjs")).href);
 const jiti = createJiti(import.meta.url, {
   alias: {
@@ -46,4 +56,5 @@ for (const f of fs.readdirSync(EXT).filter((x) => x.endsWith(".ts")).sort()) {
 const dup = [...cmds.entries()].filter(([, v]) => v.length > 1);
 console.log(`\n合计: OK ${ok} / 失败 ${bad}  |  命令总数 ${cmds.size}  |  冲突 ${dup.length}`);
 if (dup.length) dup.forEach(([n, v]) => console.log(`⚠ 命令冲突: ${n} ← ${v.join(", ")}`));
+if (tmpLink) { try { fs.unlinkSync(svcDir); } catch {} }
 process.exit(bad || dup.length ? 1 : 0);
