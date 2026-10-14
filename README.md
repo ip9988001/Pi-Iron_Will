@@ -33,8 +33,7 @@ pi-Agent 是底座，本身**没有任何记忆能力** —— 每开一个新�
 - **wiki 四类**：entities / concepts / sources / synthesis + playbooks 剧本库
 - **37 个自研扩展**（`steel-will-*`，全量启用，接入即在跑）—— 完整清单见下方《37 个扩展 · 全景》
 - **行为宪法**：阶梯规则、铁律、静默令、抓取决策阶梯、编码阶梯
-- **技能库**：35 个技能（含 `steel-will-*` 自研技能与 browser-tools / edge-tts / github-get / pi-web-restart） + browser-tools / edge-tts / github-get /
-  hyperframes / pi-web-restart
+- **技能库**：35 个技能（含 `steel-will-*` 自研技能与 browser-tools / edge-tts / github-get / hyperframes / pi-web-restart）
 - **自动运维**：L1 Watcher + 定时精炼 / 体检 / 备份
 
 ## 37 个扩展 · 全景
