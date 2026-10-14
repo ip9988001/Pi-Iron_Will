@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const bundlesDir = join(memoryDir, "bundles");
   
   // 会话开始时加载Experience Injector配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(bundlesDir, { recursive: true });
       }
       
-      const bundlePath = join(memoryDir, "EXPERIENCE_BUNDLE_SCHEMA.md");
-      const triggerPath = join(memoryDir, "TRIGGER_POLICY.md");
+      const bundlePath = join(protocolDir, "EXPERIENCE_BUNDLE_SCHEMA.md");
+      const triggerPath = join(protocolDir, "TRIGGER_POLICY.md");
       
       let context = "## 钢铁意志·PI版 经验注入\n\n";
       let statusText = "✓ 经验已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志Experience Bundle模式",
     handler: async (ctx: any) => {
       try {
-        const bundlePath = join(memoryDir, "EXPERIENCE_BUNDLE_SCHEMA.md");
+        const bundlePath = join(protocolDir, "EXPERIENCE_BUNDLE_SCHEMA.md");
         
         if (existsSync(bundlePath)) {
           const content = readFileSync(bundlePath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志触发策略",
     handler: async (ctx: any) => {
       try {
-        const triggerPath = join(memoryDir, "TRIGGER_POLICY.md");
+        const triggerPath = join(protocolDir, "TRIGGER_POLICY.md");
         
         if (existsSync(triggerPath)) {
           const content = readFileSync(triggerPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志注入策略",
     handler: async (ctx: any) => {
       try {
-        const injectionPath = join(memoryDir, "INJECTION_POLICY.md");
+        const injectionPath = join(protocolDir, "INJECTION_POLICY.md");
         
         if (existsSync(injectionPath)) {
           const content = readFileSync(injectionPath, "utf-8");

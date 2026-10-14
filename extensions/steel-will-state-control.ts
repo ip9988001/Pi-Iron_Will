@@ -4,12 +4,14 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   
   // 会话结束时提醒回写
   pi.on("session_end", async (event: any, ctx: any) => {
     try {
-      const rulesPath = join(memoryDir, "ROUND_BACKWRITE_RULES.md");
-      const trackerPath = join(memoryDir, "STAGE_TRACKER.md");
+      const rulesPath = join(protocolDir, "ROUND_BACKWRITE_RULES.md");
+      const trackerPath = join(protocolDir, "STAGE_TRACKER.md");
       
       if (existsSync(rulesPath)) {
         const rules = readFileSync(rulesPath, "utf-8");
@@ -40,7 +42,7 @@ export default function (pi: any) {
     description: "查看钢铁意志阶段跟踪",
     handler: async (ctx: any) => {
       try {
-        const trackerPath = join(memoryDir, "STAGE_TRACKER.md");
+        const trackerPath = join(protocolDir, "STAGE_TRACKER.md");
         
         if (existsSync(trackerPath)) {
           const content = readFileSync(trackerPath, "utf-8");
@@ -60,7 +62,7 @@ export default function (pi: any) {
     description: "查看钢铁意志统一口径",
     handler: async (ctx: any) => {
       try {
-        const wordingPath = join(memoryDir, "UNIFIED_WORDING.md");
+        const wordingPath = join(protocolDir, "UNIFIED_WORDING.md");
         
         if (existsSync(wordingPath)) {
           const content = readFileSync(wordingPath, "utf-8");
@@ -80,7 +82,7 @@ export default function (pi: any) {
     description: "查看钢铁意志回写纪律",
     handler: async (ctx: any) => {
       try {
-        const rulesPath = join(memoryDir, "ROUND_BACKWRITE_RULES.md");
+        const rulesPath = join(protocolDir, "ROUND_BACKWRITE_RULES.md");
         
         if (existsSync(rulesPath)) {
           const content = readFileSync(rulesPath, "utf-8");
@@ -149,7 +151,7 @@ export default function (pi: any) {
     description: "更新钢铁意志阶段状态",
     handler: async (ctx: any) => {
       try {
-        const trackerPath = join(memoryDir, "STAGE_TRACKER.md");
+        const trackerPath = join(protocolDir, "STAGE_TRACKER.md");
         
         if (!existsSync(trackerPath)) {
           ctx.ui.notify("阶段跟踪文件不存在，请先执行03包", "warning");

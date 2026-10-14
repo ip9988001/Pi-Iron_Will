@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const lessonsDir = join(memoryDir, "agent/lessons");
   
   // 会话开始时加载失败学习配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(lessonsDir, { recursive: true });
       }
       
-      const failurePath = join(memoryDir, "FAILURE_LEARNING_PROTOCOL.md");
-      const antiPatternPath = join(memoryDir, "ANTI_PATTERN_RULES.md");
+      const failurePath = join(protocolDir, "FAILURE_LEARNING_PROTOCOL.md");
+      const antiPatternPath = join(protocolDir, "ANTI_PATTERN_RULES.md");
       
       let context = "## 钢铁意志·PI版 失败学习\n\n";
       let statusText = "✓ 失败学习已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志失败学习协议",
     handler: async (ctx: any) => {
       try {
-        const failurePath = join(memoryDir, "FAILURE_LEARNING_PROTOCOL.md");
+        const failurePath = join(protocolDir, "FAILURE_LEARNING_PROTOCOL.md");
         
         if (existsSync(failurePath)) {
           const content = readFileSync(failurePath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志反模式规则",
     handler: async (ctx: any) => {
       try {
-        const antiPatternPath = join(memoryDir, "ANTI_PATTERN_RULES.md");
+        const antiPatternPath = join(protocolDir, "ANTI_PATTERN_RULES.md");
         
         if (existsSync(antiPatternPath)) {
           const content = readFileSync(antiPatternPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志避坑指南",
     handler: async (ctx: any) => {
       try {
-        const pitfallPath = join(memoryDir, "PITFALL_GUIDE_POLICY.md");
+        const pitfallPath = join(protocolDir, "PITFALL_GUIDE_POLICY.md");
         
         if (existsSync(pitfallPath)) {
           const content = readFileSync(pitfallPath, "utf-8");

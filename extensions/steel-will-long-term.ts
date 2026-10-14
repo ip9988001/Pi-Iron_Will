@@ -7,6 +7,8 @@ import semanticRetrievalService from "../services/steel-will-semantic-retrieval"
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const agentDir = join(memoryDir, "agent");
   
   // L3目录列表（用于判断是否为L3文件）
@@ -53,8 +55,8 @@ export default function (pi: any) {
         mkdirSync(agentDir, { recursive: true });
       }
       
-      const knowledgePath = join(memoryDir, "L3_KNOWLEDGE_POLICY.md");
-      const routeMapPath = join(memoryDir, "L3_ROUTE_MAP.md");
+      const knowledgePath = join(protocolDir, "L3_KNOWLEDGE_POLICY.md");
+      const routeMapPath = join(protocolDir, "L3_ROUTE_MAP.md");
       
       let context = "## 钢铁意志·PI版 长期记忆\n\n";
       let statusText = "✓ 长期已加载";
@@ -137,7 +139,7 @@ export default function (pi: any) {
     description: "查看钢铁意志L3知识策略",
     handler: async (ctx: any) => {
       try {
-        const knowledgePath = join(memoryDir, "L3_KNOWLEDGE_POLICY.md");
+        const knowledgePath = join(protocolDir, "L3_KNOWLEDGE_POLICY.md");
         
         if (existsSync(knowledgePath)) {
           const content = readFileSync(knowledgePath, "utf-8");
@@ -157,7 +159,7 @@ export default function (pi: any) {
     description: "查看钢铁意志L3路由图",
     handler: async (ctx: any) => {
       try {
-        const routeMapPath = join(memoryDir, "L3_ROUTE_MAP.md");
+        const routeMapPath = join(protocolDir, "L3_ROUTE_MAP.md");
         
         if (existsSync(routeMapPath)) {
           const content = readFileSync(routeMapPath, "utf-8");
@@ -177,7 +179,7 @@ export default function (pi: any) {
     description: "查看钢铁意志长期写回规则",
     handler: async (ctx: any) => {
       try {
-        const writebackPath = join(memoryDir, "LONG_TERM_WRITEBACK_RULES.md");
+        const writebackPath = join(protocolDir, "LONG_TERM_WRITEBACK_RULES.md");
         
         if (existsSync(writebackPath)) {
           const content = readFileSync(writebackPath, "utf-8");

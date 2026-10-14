@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   
   // 会话开始时加载记忆骨架
   pi.on("session_start", async (event: any, ctx: any) => {
@@ -13,9 +15,9 @@ export default function (pi: any) {
         mkdirSync(memoryDir, { recursive: true });
       }
       
-      const domainPath = join(memoryDir, "MEMORY_DOMAIN_POLICY.md");
-      const skeletonPath = join(memoryDir, "MEMORY_SKELETON.md");
-      const directoryMapPath = join(memoryDir, "MEMORY_DIRECTORY_MAP.md");
+      const domainPath = join(protocolDir, "MEMORY_DOMAIN_POLICY.md");
+      const skeletonPath = join(protocolDir, "MEMORY_SKELETON.md");
+      const directoryMapPath = join(protocolDir, "MEMORY_DIRECTORY_MAP.md");
       
       let context = "## 钢铁意志·PI版 记忆骨架\n\n";
       let statusText = "✓ 骨架已加载";
@@ -47,7 +49,7 @@ export default function (pi: any) {
     description: "查看钢铁意志记忆域策略",
     handler: async (ctx: any) => {
       try {
-        const domainPath = join(memoryDir, "MEMORY_DOMAIN_POLICY.md");
+        const domainPath = join(protocolDir, "MEMORY_DOMAIN_POLICY.md");
         
         if (existsSync(domainPath)) {
           const content = readFileSync(domainPath, "utf-8");
@@ -67,7 +69,7 @@ export default function (pi: any) {
     description: "查看钢铁意志记忆骨架",
     handler: async (ctx: any) => {
       try {
-        const skeletonPath = join(memoryDir, "MEMORY_SKELETON.md");
+        const skeletonPath = join(protocolDir, "MEMORY_SKELETON.md");
         
         if (existsSync(skeletonPath)) {
           const content = readFileSync(skeletonPath, "utf-8");
@@ -87,7 +89,7 @@ export default function (pi: any) {
     description: "查看钢铁意志记忆目录映射",
     handler: async (ctx: any) => {
       try {
-        const directoryMapPath = join(memoryDir, "MEMORY_DIRECTORY_MAP.md");
+        const directoryMapPath = join(protocolDir, "MEMORY_DIRECTORY_MAP.md");
         
         if (existsSync(directoryMapPath)) {
           const content = readFileSync(directoryMapPath, "utf-8");

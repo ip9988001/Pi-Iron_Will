@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const governanceDir = join(memoryDir, "governance");
   
   // 会话开始时加载治理配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(governanceDir, { recursive: true });
       }
       
-      const riskPath = join(memoryDir, "RISK_GOVERNANCE_POLICY.md");
-      const preflightPath = join(memoryDir, "PREFLIGHT_DECISION_RULES.md");
+      const riskPath = join(protocolDir, "RISK_GOVERNANCE_POLICY.md");
+      const preflightPath = join(protocolDir, "PREFLIGHT_DECISION_RULES.md");
       
       let context = "## 钢铁意志·PI版 治理系统\n\n";
       let statusText = "✓ 治理已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志风险治理策略",
     handler: async (ctx: any) => {
       try {
-        const riskPath = join(memoryDir, "RISK_GOVERNANCE_POLICY.md");
+        const riskPath = join(protocolDir, "RISK_GOVERNANCE_POLICY.md");
         
         if (existsSync(riskPath)) {
           const content = readFileSync(riskPath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志预检决策规则",
     handler: async (ctx: any) => {
       try {
-        const preflightPath = join(memoryDir, "PREFLIGHT_DECISION_RULES.md");
+        const preflightPath = join(protocolDir, "PREFLIGHT_DECISION_RULES.md");
         
         if (existsSync(preflightPath)) {
           const content = readFileSync(preflightPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志保护模式策略",
     handler: async (ctx: any) => {
       try {
-        const protectionPath = join(memoryDir, "PROTECTION_MODE_POLICY.md");
+        const protectionPath = join(protocolDir, "PROTECTION_MODE_POLICY.md");
         
         if (existsSync(protectionPath)) {
           const content = readFileSync(protectionPath, "utf-8");

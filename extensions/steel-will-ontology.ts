@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   
   // 会话开始时加载本体论配置
   pi.on("session_start", async (event: any, ctx: any) => {
@@ -13,8 +15,8 @@ export default function (pi: any) {
         mkdirSync(memoryDir, { recursive: true });
       }
       
-      const termPath = join(memoryDir, "TERM_CANONICALIZATION_RULES.md");
-      const schemaPath = join(memoryDir, "KEY_FILE_SCHEMA_RULES.md");
+      const termPath = join(protocolDir, "TERM_CANONICALIZATION_RULES.md");
+      const schemaPath = join(protocolDir, "KEY_FILE_SCHEMA_RULES.md");
       
       let context = "## 钢铁意志·PI版 本体论\n\n";
       let statusText = "✓ 本体论已加载";
@@ -46,7 +48,7 @@ export default function (pi: any) {
     description: "查看钢铁意志术语规范化规则",
     handler: async (ctx: any) => {
       try {
-        const termPath = join(memoryDir, "TERM_CANONICALIZATION_RULES.md");
+        const termPath = join(protocolDir, "TERM_CANONICALIZATION_RULES.md");
         
         if (existsSync(termPath)) {
           const content = readFileSync(termPath, "utf-8");
@@ -66,7 +68,7 @@ export default function (pi: any) {
     description: "查看钢铁意志关键文件Schema规则",
     handler: async (ctx: any) => {
       try {
-        const schemaPath = join(memoryDir, "KEY_FILE_SCHEMA_RULES.md");
+        const schemaPath = join(protocolDir, "KEY_FILE_SCHEMA_RULES.md");
         
         if (existsSync(schemaPath)) {
           const content = readFileSync(schemaPath, "utf-8");
@@ -86,7 +88,7 @@ export default function (pi: any) {
     description: "查看钢铁意志锚点引用协议",
     handler: async (ctx: any) => {
       try {
-        const anchorPath = join(memoryDir, "ANCHOR_REFERENCE_PROTOCOL.md");
+        const anchorPath = join(protocolDir, "ANCHOR_REFERENCE_PROTOCOL.md");
         
         if (existsSync(anchorPath)) {
           const content = readFileSync(anchorPath, "utf-8");
@@ -106,7 +108,7 @@ export default function (pi: any) {
     description: "查看钢铁意志品牌应答协议",
     handler: async (ctx: any) => {
       try {
-        const brandPath = join(memoryDir, "STEEL_WILL_BRAND_RESPONSE_PROTOCOL.md");
+        const brandPath = join(protocolDir, "STEEL_WILL_BRAND_RESPONSE_PROTOCOL.md");
         
         if (existsSync(brandPath)) {
           const content = readFileSync(brandPath, "utf-8");
@@ -126,7 +128,7 @@ export default function (pi: any) {
     description: "查看钢铁意志子系统规范映射",
     handler: async (ctx: any) => {
       try {
-        const subsystemPath = join(memoryDir, "STEEL_WILL_SUBSYSTEM_CANONICAL_MAP.md");
+        const subsystemPath = join(protocolDir, "STEEL_WILL_SUBSYSTEM_CANONICAL_MAP.md");
         
         if (existsSync(subsystemPath)) {
           const content = readFileSync(subsystemPath, "utf-8");

@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const reflectionsDir = join(memoryDir, "reflections");
   
   // 会话开始时加载反思配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(reflectionsDir, { recursive: true });
       }
       
-      const essencePath = join(memoryDir, "ESSENCE_REFINEMENT_PROTOCOL.md");
-      const closurePath = join(memoryDir, "CLOSURE_JUDGMENT_RULES.md");
+      const essencePath = join(protocolDir, "ESSENCE_REFINEMENT_PROTOCOL.md");
+      const closurePath = join(protocolDir, "CLOSURE_JUDGMENT_RULES.md");
       
       let context = "## 钢铁意志·PI版 反思系统\n\n";
       let statusText = "✓ 反思已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志精华提炼协议",
     handler: async (ctx: any) => {
       try {
-        const essencePath = join(memoryDir, "ESSENCE_REFINEMENT_PROTOCOL.md");
+        const essencePath = join(protocolDir, "ESSENCE_REFINEMENT_PROTOCOL.md");
         
         if (existsSync(essencePath)) {
           const content = readFileSync(essencePath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志闭环判断规则",
     handler: async (ctx: any) => {
       try {
-        const closurePath = join(memoryDir, "CLOSURE_JUDGMENT_RULES.md");
+        const closurePath = join(protocolDir, "CLOSURE_JUDGMENT_RULES.md");
         
         if (existsSync(closurePath)) {
           const content = readFileSync(closurePath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志可复用流程晋升规则",
     handler: async (ctx: any) => {
       try {
-        const reusablePath = join(memoryDir, "REUSABLE_FLOW_PROMOTION_RULES.md");
+        const reusablePath = join(protocolDir, "REUSABLE_FLOW_PROMOTION_RULES.md");
         
         if (existsSync(reusablePath)) {
           const content = readFileSync(reusablePath, "utf-8");

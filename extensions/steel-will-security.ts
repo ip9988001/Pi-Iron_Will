@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const preferencesDir = join(memoryDir, "user/preferences");
   
   // 会话开始时加载安全配置
@@ -17,7 +19,7 @@ export default function (pi: any) {
         mkdirSync(preferencesDir, { recursive: true });
       }
       
-      const boundaryPath = join(memoryDir, "BOUNDARY_READ_RULES.md");
+      const boundaryPath = join(protocolDir, "BOUNDARY_READ_RULES.md");
       const approvalPath = join(preferencesDir, "APPROVAL_AND_BOUNDARIES.md");
       
       let context = "## 钢铁意志·PI版 安全配置\n\n";
@@ -57,7 +59,7 @@ export default function (pi: any) {
       
       if (isHighRisk) {
         // 读取边界规则
-        const boundaryPath = join(memoryDir, "BOUNDARY_READ_RULES.md");
+        const boundaryPath = join(protocolDir, "BOUNDARY_READ_RULES.md");
         if (existsSync(boundaryPath)) {
           const content = readFileSync(boundaryPath, "utf-8");
           
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志边界规则",
     handler: async (ctx: any) => {
       try {
-        const boundaryPath = join(memoryDir, "BOUNDARY_READ_RULES.md");
+        const boundaryPath = join(protocolDir, "BOUNDARY_READ_RULES.md");
         
         if (existsSync(boundaryPath)) {
           const content = readFileSync(boundaryPath, "utf-8");

@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   
   // 会话开始时加载恢复协议
   pi.on("session_start", async (event: any, ctx: any) => {
@@ -13,9 +15,9 @@ export default function (pi: any) {
         mkdirSync(memoryDir, { recursive: true });
       }
       
-      const resumePath = join(memoryDir, "RESUME_PROTOCOL.md");
-      const snapshotPath = join(memoryDir, "CONTINUITY_SNAPSHOT.md");
-      const resumeCardPath = join(memoryDir, "NEW_WINDOW_RESUME_CARD.md");
+      const resumePath = join(protocolDir, "RESUME_PROTOCOL.md");
+      const snapshotPath = join(protocolDir, "CONTINUITY_SNAPSHOT.md");
+      const resumeCardPath = join(protocolDir, "NEW_WINDOW_RESUME_CARD.md");
       
       let context = "## 钢铁意志·PI版 心跳续接\n\n";
       let statusText = "✓ 心跳已加载";
@@ -53,7 +55,7 @@ export default function (pi: any) {
     description: "查看钢铁意志恢复协议",
     handler: async (ctx: any) => {
       try {
-        const resumePath = join(memoryDir, "RESUME_PROTOCOL.md");
+        const resumePath = join(protocolDir, "RESUME_PROTOCOL.md");
         
         if (existsSync(resumePath)) {
           const content = readFileSync(resumePath, "utf-8");
@@ -73,7 +75,7 @@ export default function (pi: any) {
     description: "查看钢铁意志连续性快照",
     handler: async (ctx: any) => {
       try {
-        const snapshotPath = join(memoryDir, "CONTINUITY_SNAPSHOT.md");
+        const snapshotPath = join(protocolDir, "CONTINUITY_SNAPSHOT.md");
         
         if (existsSync(snapshotPath)) {
           const content = readFileSync(snapshotPath, "utf-8");
@@ -93,7 +95,7 @@ export default function (pi: any) {
     description: "查看钢铁意志新窗口恢复卡",
     handler: async (ctx: any) => {
       try {
-        const resumeCardPath = join(memoryDir, "NEW_WINDOW_RESUME_CARD.md");
+        const resumeCardPath = join(protocolDir, "NEW_WINDOW_RESUME_CARD.md");
         
         if (existsSync(resumeCardPath)) {
           const content = readFileSync(resumeCardPath, "utf-8");
@@ -116,7 +118,7 @@ export default function (pi: any) {
         let resume = "## 钢铁意志·PI版 快速续接\n\n";
         
         // 读取连续性快照
-        const snapshotPath = join(memoryDir, "CONTINUITY_SNAPSHOT.md");
+        const snapshotPath = join(protocolDir, "CONTINUITY_SNAPSHOT.md");
         if (existsSync(snapshotPath)) {
           const content = readFileSync(snapshotPath, "utf-8");
           
@@ -158,7 +160,7 @@ export default function (pi: any) {
     description: "更新钢铁意志连续性快照",
     handler: async (ctx: any) => {
       try {
-        const snapshotPath = join(memoryDir, "CONTINUITY_SNAPSHOT.md");
+        const snapshotPath = join(protocolDir, "CONTINUITY_SNAPSHOT.md");
         
         if (!existsSync(snapshotPath)) {
           ctx.ui.notify("连续性快照不存在，请先执行05包", "warning");

@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const swarmDir = join(memoryDir, "swarm_matrix");
   
   // 会话开始时加载蜂群配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(swarmDir, { recursive: true });
       }
       
-      const collaborationPath = join(memoryDir, "MULTI_AGENT_COLLABORATION_POLICY.md");
-      const dispatchPath = join(memoryDir, "SWARM_DISPATCH_POLICY.md");
+      const collaborationPath = join(protocolDir, "MULTI_AGENT_COLLABORATION_POLICY.md");
+      const dispatchPath = join(protocolDir, "SWARM_DISPATCH_POLICY.md");
       
       let context = "## 钢铁意志·PI版 蜂群系统\n\n";
       let statusText = "✓ 蜂群已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志多代理协作策略",
     handler: async (ctx: any) => {
       try {
-        const collaborationPath = join(memoryDir, "MULTI_AGENT_COLLABORATION_POLICY.md");
+        const collaborationPath = join(protocolDir, "MULTI_AGENT_COLLABORATION_POLICY.md");
         
         if (existsSync(collaborationPath)) {
           const content = readFileSync(collaborationPath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志蜂群派发策略",
     handler: async (ctx: any) => {
       try {
-        const dispatchPath = join(memoryDir, "SWARM_DISPATCH_POLICY.md");
+        const dispatchPath = join(protocolDir, "SWARM_DISPATCH_POLICY.md");
         
         if (existsSync(dispatchPath)) {
           const content = readFileSync(dispatchPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志子代理mandate模式",
     handler: async (ctx: any) => {
       try {
-        const mandatePath = join(memoryDir, "SUBAGENT_MANDATE_SCHEMA.md");
+        const mandatePath = join(protocolDir, "SUBAGENT_MANDATE_SCHEMA.md");
         
         if (existsSync(mandatePath)) {
           const content = readFileSync(mandatePath, "utf-8");

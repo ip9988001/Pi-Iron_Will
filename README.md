@@ -71,8 +71,7 @@ pi-gangtieyizhi/
 ├── DEPENDENCIES.md        # 依赖总清单（裸机假设）+ 官方/国内双下载源表
 ├── attach.sh              # 一行外接脚本（9 步全自动）
 ├── deps.sh                # 依赖扫描 / 自动安装 / 镜像源探测
-├── extensions/            # 22 个启用的 steel-will-* 扩展
-├── extensions-disabled/   # 15 个已停用扩展（保留可秒恢复）
+├── extensions/            # 37 个 steel-will-* 扩展（全量启用，接入即全部在跑）
 ├── skills/                # PI-技能库（33 个技能）
 ├── constitution/          # AGENTS.md / SYSTEM.md / 0-AGENTS / protocols（108 份协议文档）/ goals-template
 ├── engine/                # bin/（l1_watcher.py 等）services/ scripts/ aux/ pi-extensions/

@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const candidatesDir = join(memoryDir, "candidates");
   
   // 会话开始时加载候选筛选配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(candidatesDir, { recursive: true });
       }
       
-      const heartbeatPath = join(memoryDir, "HEARTBEAT_SCREENING_PROTOCOL.md");
-      const candidatePoolPath = join(memoryDir, "L2_CANDIDATE_POOL_RULES.md");
+      const heartbeatPath = join(protocolDir, "HEARTBEAT_SCREENING_PROTOCOL.md");
+      const candidatePoolPath = join(protocolDir, "L2_CANDIDATE_POOL_RULES.md");
       
       let context = "## 钢铁意志·PI版 候选筛选\n\n";
       let statusText = "✓ 候选已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志Heartbeat筛选协议",
     handler: async (ctx: any) => {
       try {
-        const heartbeatPath = join(memoryDir, "HEARTBEAT_SCREENING_PROTOCOL.md");
+        const heartbeatPath = join(protocolDir, "HEARTBEAT_SCREENING_PROTOCOL.md");
         
         if (existsSync(heartbeatPath)) {
           const content = readFileSync(heartbeatPath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志L2候选池规则",
     handler: async (ctx: any) => {
       try {
-        const candidatePoolPath = join(memoryDir, "L2_CANDIDATE_POOL_RULES.md");
+        const candidatePoolPath = join(protocolDir, "L2_CANDIDATE_POOL_RULES.md");
         
         if (existsSync(candidatePoolPath)) {
           const content = readFileSync(candidatePoolPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志候选状态规则",
     handler: async (ctx: any) => {
       try {
-        const candidateStatusPath = join(memoryDir, "CANDIDATE_STATUS_RULES.md");
+        const candidateStatusPath = join(protocolDir, "CANDIDATE_STATUS_RULES.md");
         
         if (existsSync(candidateStatusPath)) {
           const content = readFileSync(candidateStatusPath, "utf-8");

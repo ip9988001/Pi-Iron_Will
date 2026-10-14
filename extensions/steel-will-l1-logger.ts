@@ -7,6 +7,8 @@ import semanticRetrievalService from "../services/steel-will-semantic-retrieval"
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const l1Dir = join(memoryDir, "l1");
   
   // 会话开始时加载L1配置
@@ -20,8 +22,8 @@ export default function (pi: any) {
         mkdirSync(l1Dir, { recursive: true });
       }
       
-      const protocolPath = join(memoryDir, "L1_WRITE_PROTOCOL.md");
-      const dailyLogPath = join(memoryDir, "DAILY_LOG_RULES.md");
+      const protocolPath = join(protocolDir, "L1_WRITE_PROTOCOL.md");
+      const dailyLogPath = join(protocolDir, "DAILY_LOG_RULES.md");
       
       let context = "## 钢铁意志·PI版 L1记忆\n\n";
       let statusText = "✓ L1已加载";
@@ -106,7 +108,7 @@ export default function (pi: any) {
     description: "查看钢铁意志L1写入协议",
     handler: async (ctx: any) => {
       try {
-        const protocolPath = join(memoryDir, "L1_WRITE_PROTOCOL.md");
+        const protocolPath = join(protocolDir, "L1_WRITE_PROTOCOL.md");
         
         if (existsSync(protocolPath)) {
           const content = readFileSync(protocolPath, "utf-8");

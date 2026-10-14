@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const sensoryDir = join(memoryDir, "sensory_cortex");
   
   // 会话开始时加载感知配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(sensoryDir, { recursive: true });
       }
       
-      const sensoryPath = join(memoryDir, "RUNTIME_SENSORY_POLICY.md");
-      const preflightPath = join(memoryDir, "SOMATIC_PREFLIGHT_RULES.md");
+      const sensoryPath = join(protocolDir, "RUNTIME_SENSORY_POLICY.md");
+      const preflightPath = join(protocolDir, "SOMATIC_PREFLIGHT_RULES.md");
       
       let context = "## 钢铁意志·PI版 感知系统\n\n";
       let statusText = "✓ 感知已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志运行时感知策略",
     handler: async (ctx: any) => {
       try {
-        const sensoryPath = join(memoryDir, "RUNTIME_SENSORY_POLICY.md");
+        const sensoryPath = join(protocolDir, "RUNTIME_SENSORY_POLICY.md");
         
         if (existsSync(sensoryPath)) {
           const content = readFileSync(sensoryPath, "utf-8");
@@ -66,11 +68,11 @@ export default function (pi: any) {
   });
   
   // 注册查看宿主预检规则命令
-  pi.registerCommand("steel-will-preflight", {
+  pi.registerCommand("steel-will-somatic-preflight", {
     description: "查看钢铁意志宿主预检规则",
     handler: async (ctx: any) => {
       try {
-        const preflightPath = join(memoryDir, "SOMATIC_PREFLIGHT_RULES.md");
+        const preflightPath = join(protocolDir, "SOMATIC_PREFLIGHT_RULES.md");
         
         if (existsSync(preflightPath)) {
           const content = readFileSync(preflightPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志宿主保护反应规则",
     handler: async (ctx: any) => {
       try {
-        const protectionPath = join(memoryDir, "HOST_PROTECTION_REACTION_RULES.md");
+        const protectionPath = join(protocolDir, "HOST_PROTECTION_REACTION_RULES.md");
         
         if (existsSync(protectionPath)) {
           const content = readFileSync(protectionPath, "utf-8");

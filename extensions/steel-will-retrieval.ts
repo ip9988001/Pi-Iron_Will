@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   
   // 会话开始时加载检索配置
   pi.on("session_start", async (event: any, ctx: any) => {
@@ -13,8 +15,8 @@ export default function (pi: any) {
         mkdirSync(memoryDir, { recursive: true });
       }
       
-      const indexPath = join(memoryDir, "INDEX_NAVIGATION_PROTOCOL.md");
-      const retrievalPath = join(memoryDir, "RETRIEVAL_LAYER_POLICY.md");
+      const indexPath = join(protocolDir, "INDEX_NAVIGATION_PROTOCOL.md");
+      const retrievalPath = join(protocolDir, "RETRIEVAL_LAYER_POLICY.md");
       
       let context = "## 钢铁意志·PI版 检索系统\n\n";
       let statusText = "✓ 检索已加载";
@@ -46,7 +48,7 @@ export default function (pi: any) {
     description: "查看钢铁意志INDEX导航协议",
     handler: async (ctx: any) => {
       try {
-        const indexPath = join(memoryDir, "INDEX_NAVIGATION_PROTOCOL.md");
+        const indexPath = join(protocolDir, "INDEX_NAVIGATION_PROTOCOL.md");
         
         if (existsSync(indexPath)) {
           const content = readFileSync(indexPath, "utf-8");
@@ -66,7 +68,7 @@ export default function (pi: any) {
     description: "查看钢铁意志检索层策略",
     handler: async (ctx: any) => {
       try {
-        const retrievalPath = join(memoryDir, "RETRIEVAL_LAYER_POLICY.md");
+        const retrievalPath = join(protocolDir, "RETRIEVAL_LAYER_POLICY.md");
         
         if (existsSync(retrievalPath)) {
           const content = readFileSync(retrievalPath, "utf-8");
@@ -86,7 +88,7 @@ export default function (pi: any) {
     description: "查看钢铁意志词法回退规则",
     handler: async (ctx: any) => {
       try {
-        const lexicalPath = join(memoryDir, "LEXICAL_FALLBACK_RULES.md");
+        const lexicalPath = join(protocolDir, "LEXICAL_FALLBACK_RULES.md");
         
         if (existsSync(lexicalPath)) {
           const content = readFileSync(lexicalPath, "utf-8");
@@ -106,7 +108,7 @@ export default function (pi: any) {
     description: "查看钢铁意志INDEX",
     handler: async (ctx: any) => {
       try {
-        const indexMdPath = join(memoryDir, "INDEX.md");
+        const indexMdPath = join(protocolDir, "INDEX.md");
         
         if (existsSync(indexMdPath)) {
           const content = readFileSync(indexMdPath, "utf-8");

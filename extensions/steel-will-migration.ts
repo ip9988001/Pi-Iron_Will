@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const governanceDir = join(memoryDir, "governance");
   
   // 会话开始时加载迁移配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(governanceDir, { recursive: true });
       }
       
-      const bootstrapPath = join(memoryDir, "BOOTSTRAP_DEPLOYMENT_PROTOCOL.md");
-      const acceptancePath = join(memoryDir, "REAL_WORKSPACE_ACCEPTANCE_RULES.md");
+      const bootstrapPath = join(protocolDir, "BOOTSTRAP_DEPLOYMENT_PROTOCOL.md");
+      const acceptancePath = join(protocolDir, "REAL_WORKSPACE_ACCEPTANCE_RULES.md");
       
       let context = "## 钢铁意志·PI版 迁移系统\n\n";
       let statusText = "✓ 迁移已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志Bootstrap部署协议",
     handler: async (ctx: any) => {
       try {
-        const bootstrapPath = join(memoryDir, "BOOTSTRAP_DEPLOYMENT_PROTOCOL.md");
+        const bootstrapPath = join(protocolDir, "BOOTSTRAP_DEPLOYMENT_PROTOCOL.md");
         
         if (existsSync(bootstrapPath)) {
           const content = readFileSync(bootstrapPath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志真实工作区验收规则",
     handler: async (ctx: any) => {
       try {
-        const acceptancePath = join(memoryDir, "REAL_WORKSPACE_ACCEPTANCE_RULES.md");
+        const acceptancePath = join(protocolDir, "REAL_WORKSPACE_ACCEPTANCE_RULES.md");
         
         if (existsSync(acceptancePath)) {
           const content = readFileSync(acceptancePath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志迁移烟雾测试规则",
     handler: async (ctx: any) => {
       try {
-        const smokeTestPath = join(memoryDir, "MIGRATION_SMOKE_TEST_RULES.md");
+        const smokeTestPath = join(protocolDir, "MIGRATION_SMOKE_TEST_RULES.md");
         
         if (existsSync(smokeTestPath)) {
           const content = readFileSync(smokeTestPath, "utf-8");

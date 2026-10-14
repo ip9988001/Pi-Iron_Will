@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   const adjudicationDir = join(memoryDir, "adjudication");
   
   // 会话开始时加载裁决配置
@@ -17,8 +19,8 @@ export default function (pi: any) {
         mkdirSync(adjudicationDir, { recursive: true });
       }
       
-      const conflictPath = join(memoryDir, "CONFLICT_ADJUDICATION_RULES.md");
-      const supersessionPath = join(memoryDir, "SUPERSESSION_POLICY.md");
+      const conflictPath = join(protocolDir, "CONFLICT_ADJUDICATION_RULES.md");
+      const supersessionPath = join(protocolDir, "SUPERSESSION_POLICY.md");
       
       let context = "## 钢铁意志·PI版 裁决系统\n\n";
       let statusText = "✓ 裁决已加载";
@@ -50,7 +52,7 @@ export default function (pi: any) {
     description: "查看钢铁意志冲突裁决规则",
     handler: async (ctx: any) => {
       try {
-        const conflictPath = join(memoryDir, "CONFLICT_ADJUDICATION_RULES.md");
+        const conflictPath = join(protocolDir, "CONFLICT_ADJUDICATION_RULES.md");
         
         if (existsSync(conflictPath)) {
           const content = readFileSync(conflictPath, "utf-8");
@@ -70,7 +72,7 @@ export default function (pi: any) {
     description: "查看钢铁意志替代策略",
     handler: async (ctx: any) => {
       try {
-        const supersessionPath = join(memoryDir, "SUPERSESSION_POLICY.md");
+        const supersessionPath = join(protocolDir, "SUPERSESSION_POLICY.md");
         
         if (existsSync(supersessionPath)) {
           const content = readFileSync(supersessionPath, "utf-8");
@@ -90,7 +92,7 @@ export default function (pi: any) {
     description: "查看钢铁意志过时检测规则",
     handler: async (ctx: any) => {
       try {
-        const stalePath = join(memoryDir, "STALE_DETECTION_AND_DISPOSITION_RULES.md");
+        const stalePath = join(protocolDir, "STALE_DETECTION_AND_DISPOSITION_RULES.md");
         
         if (existsSync(stalePath)) {
           const content = readFileSync(stalePath, "utf-8");

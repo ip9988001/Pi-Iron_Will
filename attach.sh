@@ -97,16 +97,20 @@ inst(){ # src dst —— 用 src/. 语义，避免目标已存在时把源目录
   mkdir -p "$2"
   cp -a "$1/." "$2/"
 }
-# 扩展：默认不覆盖已有的同名文件（保护本机改动）
-mkdir -p "$AG/extensions" "$AG/extensions-disabled"
+# 扩展：全量启用，默认不覆盖已有的同名文件（保护本机改动）
+mkdir -p "$AG/extensions"
 for f in "$SRC"/extensions/*.ts; do
   b="$(basename "$f")"; [ -e "$AG/extensions/$b" ] || cp -f "$f" "$AG/extensions/$b"
 done
-ok "扩展: 已确保 $(ls "$AG/extensions"/*.ts 2>/dev/null | wc -l) 个在位"
-for f in "$SRC"/extensions-disabled/*; do
-  b="$(basename "$f")"; [ -e "$AG/extensions-disabled/$b" ] || cp -f "$f" "$AG/extensions-disabled/$b"
-done
-ok "停用扩展: 已确保 $(ls "$AG/extensions-disabled"/*.ts 2>/dev/null | wc -l) 个在位"
+# 老机器迁移：历史遗留的 extensions-disabled/ 一并迁入启用目录（本版起不再有停用概念）
+if [ -d "$AG/extensions-disabled" ]; then
+  for f in "$AG"/extensions-disabled/*.ts; do
+    [ -e "$f" ] || continue; b="$(basename "$f")"
+    [ -e "$AG/extensions/$b" ] || cp -f "$f" "$AG/extensions/$b"
+  done
+  mv "$AG/extensions-disabled" "$AG/extensions-disabled.migrated-$(date +%Y%m%d-%H%M%S)" 2>/dev/null
+fi
+ok "扩展: 已确保 $(ls "$AG/extensions"/*.ts 2>/dev/null | wc -l) 个在位（全量启用）"
 inst "$SRC/skills"              "$AG/PI-技能库"
 ok "技能库: $(ls "$AG/PI-技能库" 2>/dev/null | wc -l) 个技能"
 inst "$SRC/constitution/0-AGENTS" "$AG/0-AGENTS"
@@ -125,7 +129,8 @@ ok "引擎层已就位（l1_watcher.py / recall.sh / 语义检索 / 脚本）"
 # ---------- 3. 记忆骨架（已存在则不碰） ----------
 say "4/9 建立记忆骨架"
 for d in l1 wiki wiki_candidates/pending agent candidates candidates/agent candidates/user \
-         system goals stages reflections archive/protocols adjudication governance user; do
+         system goals stages reflections archive/protocols adjudication governance user \
+         bundles sensory_cortex swarm_matrix; do
   mkdir -p "$AG/memory/$d"
 done
 [ -d "$AG/memory/wiki/entities" ] || mkdir -p "$AG/memory/wiki/"{"entities","concepts","sources","synthesis"}
@@ -238,7 +243,7 @@ if [ "$NONINTERACTIVE" = "1" ] || true; then
   fi
 fi
 echo "  pi 底座      : $PI_VER"
-echo "  扩展         : $(ls "$AG/extensions"/*.ts 2>/dev/null | wc -l) 个启用 / $(ls "$AG/extensions-disabled"/*.ts 2>/dev/null | wc -l) 个停用"
+echo "  扩展         : $(ls "$AG/extensions"/*.ts 2>/dev/null | wc -l) 个（全量启用，无停用）"
 echo "  技能         : $(ls "$AG/PI-技能库" 2>/dev/null | wc -l) 个"
 echo "  约束层       : $([ -d "$AG/0-AGENTS" ] && echo OK || echo 缺失)"
 echo "  宪法         : $([ -e "$AG/AGENTS.md" ] && echo OK || echo 缺失)"

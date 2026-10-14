@@ -4,6 +4,8 @@ import { join } from "path";
 export default function (pi: any) {
   const homeDir = process.env.HOME || process.env.USERPROFILE || "~";
   const memoryDir = join(homeDir, ".pi/agent/memory");
+  // 协议文档解析：新布局在 memory/archive/protocols，老布局回退 memory 根
+  const protocolDir = existsSync(join(memoryDir, "archive/protocols")) ? join(memoryDir, "archive/protocols") : memoryDir;
   
   // 会话开始时加载操作控制台
   pi.on("session_start", async (event: any, ctx: any) => {
@@ -13,9 +15,9 @@ export default function (pi: any) {
         mkdirSync(memoryDir, { recursive: true });
       }
       
-      const consolePath = join(memoryDir, "OPERATIONS_CONSOLE.md");
-      const liveSurfacePath = join(memoryDir, "LIVE_MEMORY_SURFACE.md");
-      const actionCardPath = join(memoryDir, "DEFAULT_ACTION_CARD.md");
+      const consolePath = join(protocolDir, "OPERATIONS_CONSOLE.md");
+      const liveSurfacePath = join(protocolDir, "LIVE_MEMORY_SURFACE.md");
+      const actionCardPath = join(protocolDir, "DEFAULT_ACTION_CARD.md");
       
       let context = "## 钢铁意志·PI版 调度控制\n\n";
       let statusText = "✓ 调度已加载";
@@ -47,7 +49,7 @@ export default function (pi: any) {
     description: "查看钢铁意志操作控制台",
     handler: async (ctx: any) => {
       try {
-        const consolePath = join(memoryDir, "OPERATIONS_CONSOLE.md");
+        const consolePath = join(protocolDir, "OPERATIONS_CONSOLE.md");
         
         if (existsSync(consolePath)) {
           const content = readFileSync(consolePath, "utf-8");
@@ -67,7 +69,7 @@ export default function (pi: any) {
     description: "查看钢铁意志实时记忆面",
     handler: async (ctx: any) => {
       try {
-        const liveSurfacePath = join(memoryDir, "LIVE_MEMORY_SURFACE.md");
+        const liveSurfacePath = join(protocolDir, "LIVE_MEMORY_SURFACE.md");
         
         if (existsSync(liveSurfacePath)) {
           const content = readFileSync(liveSurfacePath, "utf-8");
@@ -87,7 +89,7 @@ export default function (pi: any) {
     description: "查看钢铁意志默认动作卡",
     handler: async (ctx: any) => {
       try {
-        const actionCardPath = join(memoryDir, "DEFAULT_ACTION_CARD.md");
+        const actionCardPath = join(protocolDir, "DEFAULT_ACTION_CARD.md");
         
         if (existsSync(actionCardPath)) {
           const content = readFileSync(actionCardPath, "utf-8");

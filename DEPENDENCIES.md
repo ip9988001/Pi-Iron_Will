@@ -146,7 +146,7 @@ bash deps.sh mirrors --apply-global      # 固化镜像到 pip/npm 全局配置
 ```
 ~/.pi/agent/
 ├── AGENTS.md  SYSTEM.md  0-AGENTS/
-├── extensions/（22）  extensions-disabled/（15）  PI-技能库/（33）
+├── extensions/（37，全量启用）  PI-技能库/（33）
 ├── bin/  services/  scripts/  assets/  .pi/extensions/rtk.ts
 ├── STEEL-WILL-KEYS.md          # 密钥汇总表（600）
 ├── l1_watcher.config.json      # 兼容配置（600）
