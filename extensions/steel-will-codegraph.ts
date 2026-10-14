@@ -132,6 +132,9 @@ UNION ALL SELECT 'unresolved', COUNT(*) FROM unresolved_refs`;
 
   return `
 import sqlite3, json, sys
+
+// 跨平台解释器：Windows 上是 python，类 Unix 上是 python3
+const PY_CMD = process.platform === "win32" ? "python" : "python3";
 try:
     db = sqlite3.connect(r"${dbPath}")
     db.row_factory = sqlite3.Row
@@ -164,7 +167,7 @@ function queryCodeGraph(queryType: string, params: Record<string, any>): any[] {
   if (!existsSync(parentDir)) mkdirSync(parentDir, { recursive: true });
   writeFileSync(tmpFile, script, "utf-8");
 
-  const result = execSync(`python3 "${tmpFile}"`, {
+  const result = execSync(`${PY_CMD} "${tmpFile}"`, {
     encoding: "utf-8",
     timeout: 10000,
     maxBuffer: 1024 * 1024,

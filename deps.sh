@@ -34,7 +34,11 @@ detect(){
     alpine) PM=apk ;;
     arch|manjaro|endeavouros) PM=pacman ;;
     opensuse*|sles|opensuse-leap) PM=zypper ;;
-    *) case "$(uname -s)" in Darwin) PM=brew;; *) PM="";; esac ;;
+    *) case "$(uname -s)" in
+         Darwin) PM=brew ;;
+         MINGW*|MSYS*|CYGWIN*) PM=winget ;;
+         *) PM="" ;;
+       esac ;;
   esac
   ARCH="$(uname -m)"
   [ "$(id -u)" = "0" ] || SUDO="sudo"

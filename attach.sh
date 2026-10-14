@@ -13,6 +13,12 @@ set -uo pipefail
 SRC="$(cd "$(dirname "$0")" && pwd)"
 PI_HOME="${PI_HOME:-$HOME/.pi}"
 AG="$PI_HOME/agent"
+# 平台探测：linux / macos / windows(Git Bash / MSYS / Cygwin)
+OS_KIND="linux"
+case "$(uname -s 2>/dev/null)" in
+  Darwin) OS_KIND="macos" ;;
+  MINGW*|MSYS*|CYGWIN*) OS_KIND="windows" ;;
+esac
 NONINTERACTIVE=0; WITH_OPT=0
 for a in "$@"; do case "$a" in --yes|-y) NONINTERACTIVE=1;; --with-optional) WITH_OPT=1;; esac; done
 
@@ -75,7 +81,16 @@ PY
 
 # ---------- 1. 依赖扫描与自动安装 ----------
 say "1/9 依赖扫描与自动安装"
-if [ -f "$SRC/deps.sh" ]; then
+if [ "$OS_KIND" = "windows" ]; then
+  warn "检测到 Windows 环境（Git Bash / MSYS）"
+  echo "    ★ 推荐改用 PowerShell 原生接入（功能完整，不需要 Git Bash）："
+  echo "        powershell -ExecutionPolicy Bypass -File \"$SRC/attach.ps1\""
+  echo "    本脚本会继续，但依赖只做检测、不改系统。缺什么用 winget 装："
+  for t in python3 python node npm git; do
+    command -v "$t" >/dev/null 2>&1 && ok "已装: $t" || warn "缺失: $t"
+  done
+  echo "       winget install Python.Python.3.12   /   winget install OpenJS.NodeJS.LTS   /   winget install Git.Git"
+elif [ -f "$SRC/deps.sh" ]; then
   bash "$SRC/deps.sh" scan
   echo
   if [ "$WITH_OPT" = "1" ]; then bash "$SRC/deps.sh" install --with-optional
@@ -117,12 +132,13 @@ inst "$SRC/constitution/0-AGENTS" "$AG/0-AGENTS"
 [ -e "$AG/AGENTS.md" ] || cp -f "$SRC/constitution/AGENTS.md" "$AG/AGENTS.md"
 [ -e "$AG/SYSTEM.md" ] || cp -f "$SRC/constitution/SYSTEM.md" "$AG/SYSTEM.md"
 ok "宪法与约束层已就位"
-mkdir -p "$AG/bin" "$AG/services" "$AG/scripts" "$AG/assets" "$AG/.pi/extensions"
+mkdir -p "$AG/bin" "$AG/services" "$AG/scripts" "$AG/assets" "$AG/win" "$AG/.pi/extensions"
 cp -f "$SRC/engine/bin/"*       "$AG/bin/"       2>/dev/null
 cp -f "$SRC/engine/services/"*  "$AG/services/"  2>/dev/null
 cp -f "$SRC/engine/scripts/"*   "$AG/scripts/"   2>/dev/null
 cp -f "$SRC/engine/pi-extensions/rtk.ts" "$AG/.pi/extensions/rtk.ts" 2>/dev/null
 cp -f "$SRC/engine/aux/"*       "$AG/bin/"       2>/dev/null
+cp -f "$SRC/engine/win/"*       "$AG/win/"       2>/dev/null
 chmod +x "$AG/bin/"* 2>/dev/null
 ok "引擎层已就位（l1_watcher.py / recall.sh / 语义检索 / 脚本）"
 
@@ -131,9 +147,32 @@ fixpath(){
   [ -e "$1" ] || return 0
   sed -i "s|/root/\.local|$HOME/.local|g; s|/root/\.pi/agent|$AG|g" "$1" 2>/dev/null || true
 }
-for f in "$AG"/bin/*.sh "$AG"/bin/*.py "$AG"/scripts/* "$AG"/0-AGENTS/*.md "$AG"/*.md; do fixpath "$f"; done
+# Windows（Git Bash）下模板里可能写的是 C:\Users\<名字>\...，用 python 做字面替换（不在 MSYS 里受反斜杠转义折磨）
+fixwin(){
+  [ "$OS_KIND" = "windows" ] || return 0
+  [ -e "$1" ] || return 0
+  local PY
+  PY=$(command -v python || command -v python3) || return 0
+  "$PY" - "$1" "$AG" "$HOME" <<'PYWIN' 2>/dev/null || true
+import sys, io, os
+p, ag, home = sys.argv[1], sys.argv[2], sys.argv[3]
+try: s = io.open(p, encoding="utf-8", errors="ignore").read()
+except Exception: sys.exit(0)
+o = s
+s = s.replace("/root/.pi/agent", ag.replace("\\", "/"))
+s = s.replace("C:\\Users\\35881\\.pi\\agent", ag)
+appdata = os.environ.get("APPDATA")
+if appdata:
+    s = s.replace("C:\\Users\\35881\\AppData\\Roaming\\npm", os.path.join(appdata, "npm"))
+s = s.replace("C:\\Users\\35881", home)
+if s != o:
+    try: io.open(p, "w", encoding="utf-8", newline="").write(s)
+    except Exception: pass
+PYWIN
+}
+for f in "$AG"/bin/*.sh "$AG"/bin/*.py "$AG"/scripts/* "$AG"/0-AGENTS/*.md "$AG"/*.md "$AG"/win/*.ps1; do fixpath "$f"; fixwin "$f"; done
 if [ -d "$AG/PI-技能库" ]; then
-  find "$AG/PI-技能库" -type f \( -name "*.md" -o -name "*.sh" \) -print0 2>/dev/null | while IFS= read -r -d '' f; do fixpath "$f"; done
+  find "$AG/PI-技能库" -type f \( -name "*.md" -o -name "*.sh" \) -print0 2>/dev/null | while IFS= read -r -d '' f; do fixpath "$f"; fixwin "$f"; done
 fi
 ok "路径归位完成（/root/.pi/agent → $AG）"
 
@@ -241,6 +280,14 @@ if [ -d "/etc/systemd/system" ] && need systemctl; then
   $SUDO systemctl daemon-reload 2>/dev/null
   $SUDO systemctl enable --now l1-watcher 2>/dev/null && ok "l1-watcher 已启动（会话采集，常驻）" || warn "l1-watcher 启动失败"
   $SUDO systemctl enable --now l1-refine.timer 2>/dev/null && ok "l1-refine.timer 已启用（每日 04:00 记忆提炼）" || warn "l1-refine.timer 启用失败"
+elif [ "$OS_KIND" = "windows" ]; then
+  if [ -e "$AG/win/install-tasks.ps1" ] && command -v powershell >/dev/null 2>&1; then
+    echo "  用 Windows 计划任务替代 systemd（登录常驻 + 每日精炼）..."
+    powershell -ExecutionPolicy Bypass -File "$AG/win/install-tasks.ps1" -AgentDir "$AG" 2>&1 | sed 's/^/    /'
+    powershell -ExecutionPolicy Bypass -File "$AG/win/install-tasks.ps1" -AgentDir "$AG" >/dev/null 2>&1 && ok "Windows 计划任务已安装" || warn "计划任务安装失败，可手工执行 $AG/win/install-tasks.ps1"
+  else
+    warn "未找到 powershell 或 install-tasks.ps1，跳过服务安装"
+  fi
 else warn "非 systemd 环境，跳过服务安装；可手工运行 $AG/bin/l1_watcher.py"; fi
 
 # ---------- 8. 验证 ----------

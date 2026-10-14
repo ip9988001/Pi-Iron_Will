@@ -89,6 +89,20 @@ pi-Agent 是底座，本身**没有任何记忆能力** —— 每开一个新�
 
 一句话：**这个仓库是「引擎」，那个仓库是「这台装了引擎的车」。**
 
+## 支持哪些系统（自适应，无需 WSL）
+
+| 系统 | 接入入口 | 服务守护 | 依赖安装 |
+|---|---|---|---|
+| **Linux** | `bash attach.sh --yes` | systemd（l1-watcher + l1-refine.timer） | `deps.sh`：apt / dnf / yum / apk / pacman / zypper |
+| **macOS** | `bash attach.sh --yes` | 手工 / launchd（attach 会提示） | `deps.sh`：brew |
+| **Windows** | **`powershell -ExecutionPolicy Bypass -File attach.ps1 -Yes`** | **计划任务**（SteelWill-L1Watcher 登录常驻 + SteelWill-L1Refine 每日 04:00） | winget 检测 + npm |
+| Windows + Git Bash | `bash attach.sh --yes`（尽力而为） | 计划任务（调 powershell） | 只检测不安装，缺件提示 winget |
+
+**Windows 不需要 WSL，也不需要 Git Bash** —— `attach.ps1` 是 PowerShell 原生的 9 步全自动接入。
+
+跨平台说明：37 个扩展与 `l1_watcher.py` 本身即跨平台（自动识别 `HOME` / `USERPROFILE`）；
+`codegraph` 扩展会自动在 `python`（Windows）与 `python3`（Unix）之间选择解释器。
+
 ## 一行外接（已在全新机器实测）
 
 前提只有一条：机器上已有 **pi 底座**（`pi --version` 能跑）。没有就先装：
@@ -100,8 +114,17 @@ export PATH="$HOME/.pi/agent/bin:$PATH"     # 装完按提示执行这句
 
 然后一行外接：
 
+Linux / macOS：
+
 ```bash
 git clone https://github.com/ip9988001/Pi-Iron_Will.git ~/Pi-Iron_Will && bash ~/Pi-Iron_Will/attach.sh --yes
+```
+
+Windows（PowerShell，不需要 WSL）：
+
+```powershell
+git clone https://github.com/ip9988001/Pi-Iron_Will.git $HOME\Pi-Iron_Will
+powershell -ExecutionPolicy Bypass -File $HOME\Pi-Iron_Will\attach.ps1 -Yes
 ```
 
 - `bash attach.sh` —— 交互式，会询问 key（**全部可以跳过**）
@@ -130,12 +153,13 @@ pi-gangtieyizhi/
 ├── README.md              # 本文件
 ├── KEYS.md                # 密钥清单、密钥汇总表与五级兜底规则
 ├── DEPENDENCIES.md        # 依赖总清单（裸机假设）+ 官方/国内双下载源表
-├── attach.sh              # 一行外接脚本（9 步全自动）
+├── attach.sh              # Linux / macOS 一行外接（9 步全自动）
+├── attach.ps1             # Windows 原生一行外接（PowerShell，无需 WSL）
 ├── deps.sh                # 依赖扫描 / 自动安装 / 镜像源探测
 ├── extensions/            # 37 个 steel-will-* 扩展（全量启用，接入即全部在跑）
 ├── skills/                # PI-技能库（35 个技能）
 ├── constitution/          # AGENTS.md / SYSTEM.md / 0-AGENTS / protocols（108 份协议文档）/ goals-template
-├── engine/                # bin/（l1_watcher.py 等）services/ scripts/ aux/ pi-extensions/
+├── engine/                # bin/（l1_watcher.py、recall.sh、recall.ps1）services/ scripts/ aux/ pi-extensions/ win/（计划任务）
 ├── config/                # settings / l1_watcher.config.example / STEEL-WILL-KEYS.example / mcp-adapter / package.json
 └── systemd/               # 框架自身的服务与定时器（l1-watcher / l1-refine）
 ```

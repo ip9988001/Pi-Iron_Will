@@ -33,7 +33,15 @@
 | 编译 | `build-essential` | `gcc-c++ make` | `build-base` | `base-devel` |
 | 时区 | `tzdata` | `tzdata` | `tzdata` | `tzdata` |
 
-**`deps.sh` 能自动识别的包管理器**：`apt` / `dnf` / `yum` / `apk` / `pacman` / `zypper` / `brew`（macOS）
+**`deps.sh` 能自动识别的包管理器**：`apt` / `dnf` / `yum` / `apk` / `pacman` / `zypper` / `brew`（macOS）/ `winget`（Windows / Git Bash）
+
+**Windows 原生**：走 `attach.ps1`，依赖用 winget 装（Python / Node），服务用「计划任务」替代 systemd：
+
+```powershell
+winget install Python.Python.3.12     # 记忆提炼必需
+winget install OpenJS.NodeJS.LTS      # npm 依赖必需
+winget install Git.Git                # 可选
+```
 通过 `/etc/os-release` 的 `ID` 判断，`uname -m` 判断架构。
 
 ---
