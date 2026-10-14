@@ -15,16 +15,9 @@ const ver = fs.readFileSync(path.join(ROOT, "current-version"), "utf8").trim();
 const NM = path.join(ROOT, "releases", ver, "node_modules");
 const PIROOT = path.join(NM, "@earendil-works", "pi-coding-agent");
 
-// 扩展可能 import "../services/xxx.ts"；部署布局下 $AG/services 存在，
-// 仓库布局下服务在 engine/services —— 自测时临时挂一个软链补齐。
-const base = path.dirname(EXT);
-const svcDir = path.join(base, "services");
-const altSvc = path.join(base, "engine", "services");
-let tmpLink = false;
-if (!fs.existsSync(svcDir) && fs.existsSync(altSvc)) {
-  try { fs.symlinkSync(altSvc, svcDir, "dir"); tmpLink = true; } catch {}
-}
-
+// 注意：本脚本以"安装后"的目录为校验目标（默认 ~/.pi/agent/extensions）。
+// 该目录下扩展的相对导入 "../services/*" 指向 $AG/services（attach.sh 已装）。
+// 直接对仓库内 extensions/ 校验时，6 个依赖 services 的扩展会解析失败，属预期。
 const { createJiti } = await import(pathToFileURL(path.join(NM, "jiti", "lib", "jiti-static.mjs")).href);
 const jiti = createJiti(import.meta.url, {
   alias: {
@@ -56,5 +49,4 @@ for (const f of fs.readdirSync(EXT).filter((x) => x.endsWith(".ts")).sort()) {
 const dup = [...cmds.entries()].filter(([, v]) => v.length > 1);
 console.log(`\n合计: OK ${ok} / 失败 ${bad}  |  命令总数 ${cmds.size}  |  冲突 ${dup.length}`);
 if (dup.length) dup.forEach(([n, v]) => console.log(`⚠ 命令冲突: ${n} ← ${v.join(", ")}`));
-if (tmpLink) { try { fs.unlinkSync(svcDir); } catch {} }
 process.exit(bad || dup.length ? 1 : 0);
