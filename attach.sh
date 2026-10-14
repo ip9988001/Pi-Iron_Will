@@ -126,6 +126,17 @@ cp -f "$SRC/engine/aux/"*       "$AG/bin/"       2>/dev/null
 chmod +x "$AG/bin/"* 2>/dev/null
 ok "引擎层已就位（l1_watcher.py / recall.sh / 语义检索 / 脚本）"
 
+# 路径归位：模板里写死的是作者机器的 /root/.pi/agent，换成实际安装路径
+fixpath(){
+  [ -e "$1" ] || return 0
+  sed -i "s|/root/\.local|$HOME/.local|g; s|/root/\.pi/agent|$AG|g" "$1" 2>/dev/null || true
+}
+for f in "$AG"/bin/*.sh "$AG"/bin/*.py "$AG"/scripts/* "$AG"/0-AGENTS/*.md "$AG"/*.md; do fixpath "$f"; done
+if [ -d "$AG/PI-技能库" ]; then
+  find "$AG/PI-技能库" -type f \( -name "*.md" -o -name "*.sh" \) -print0 2>/dev/null | while IFS= read -r -d '' f; do fixpath "$f"; done
+fi
+ok "路径归位完成（/root/.pi/agent → $AG）"
+
 # ---------- 3. 记忆骨架（已存在则不碰） ----------
 say "4/9 建立记忆骨架"
 for d in l1 wiki wiki_candidates/pending agent candidates candidates/agent candidates/user \
@@ -190,6 +201,7 @@ fi
 
 # ---------- 5. settings / MCP ----------
 say "6/9 注册 settings 与 MCP"
+export STEEL_AG="$AG"
 $PY - "$AG/settings.json" "$SRC/config" <<'PY'
 import json,sys,os
 sp,cd=sys.argv[1],sys.argv[2]
@@ -200,7 +212,7 @@ pk=s.setdefault("packages",[])
 for p in ["https://github.com/anthropics/skills","https://github.com/badlogic/pi-skills","npm:pi-mcp-adapter","npm:pi-lean-ctx"]:
     if p not in pk: pk.append(p)
 ex=s.setdefault("extensions",[])
-rtk=os.path.expanduser("~/.pi/agent/.pi/extensions/rtk.ts")
+rtk=os.path.join(os.environ.get("STEEL_AG") or os.path.expanduser("~/.pi/agent"), ".pi/extensions/rtk.ts")
 if os.path.exists(rtk) and rtk not in ex: ex.append(rtk)
 json.dump(s,open(sp,'w',encoding='utf-8'),indent=2,ensure_ascii=False)
 print("[✓] settings.json 已更新（packages / extensions）")
@@ -225,6 +237,7 @@ say "8/9 安装服务与定时器"
 SUDO=""; [ "$(id -u)" = "0" ] || SUDO="sudo"
 if [ -d "/etc/systemd/system" ] && need systemctl; then
   $SUDO cp -f "$SRC/systemd/l1-watcher.service" "$SRC/systemd/l1-refine.service" "$SRC/systemd/l1-refine.timer" /etc/systemd/system/ 2>/dev/null
+  $SUDO sed -i "s|/root/\.pi/agent|$AG|g; s|/usr/bin/python3|$(command -v python3 || echo /usr/bin/python3)|g" /etc/systemd/system/l1-watcher.service /etc/systemd/system/l1-refine.service 2>/dev/null
   $SUDO systemctl daemon-reload 2>/dev/null
   $SUDO systemctl enable --now l1-watcher 2>/dev/null && ok "l1-watcher 已启动（会话采集，常驻）" || warn "l1-watcher 启动失败"
   $SUDO systemctl enable --now l1-refine.timer 2>/dev/null && ok "l1-refine.timer 已启用（每日 04:00 记忆提炼）" || warn "l1-refine.timer 启用失败"
